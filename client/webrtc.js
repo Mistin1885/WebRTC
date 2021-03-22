@@ -83,7 +83,6 @@ function handleLogin(success,allUsers) {
 }
 /* END: Register user for first time i.e. Prepare ground for webrtc call to happen */
 
-
 function getUserMediaSuccess(stream) {
   localStream = stream;
   localVideo.srcObject = stream;
@@ -228,8 +227,6 @@ function handleOffer(offer, name) {
 /* Call answer functionality ends */
 /* Call decline functionality starts */
 declineBtn.addEventListener("click", function () {
-  //document.getElementById('callInitiator').style.display = 'block';
-  document.getElementById('callReceiver').style.display = 'none';
   send({ 
     type: "leave" 
  });
@@ -284,6 +281,7 @@ function handleLeave() {
   console.log('connection state after',connectionState1)
   console.log('signalling state after',signallingState1)
   document.getElementById('callOngoing').style.display = 'none';
+  document.getElementById('callReceiver').style.display = 'none';
   document.getElementById('callInitiator').style.display = 'block';
   //yourConn = null;
 };
