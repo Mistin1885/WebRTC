@@ -116,19 +116,19 @@ function createPeerConnection(){
 callBtn.addEventListener("click", function () {
   console.log('inside call button')
 
-  createPeerConnection();
-
   var callToUsername = document.getElementById('callToUsernameInput').value;
 	
   if (callToUsername.length > 0) { 
     connectedUser = callToUsername; 
     console.log('nameToCall',connectedUser);
     console.log('create an offer to-',connectedUser)
+
+    createPeerConnection()
     
     var connectionState2 = yourConn.connectionState;
     console.log('connection state before call beginning',connectionState2)
     var signallingState2 = yourConn.signalingState;
-
+  
   //console.log('connection state after',connectionState1)
   console.log('signalling state after',signallingState2)
     yourConn.createOffer(function (offer) { 
@@ -177,8 +177,8 @@ function gotMessageFromServer(message) {
     break; 
     case "leave": 
       handleLeave();
-      alert(connectedUser + " disconnected !");
-    break; 
+      alert("Remote has disconnected !");
+    break;
     default: 
       break; 
   } 
@@ -203,14 +203,10 @@ function handleOffer(offer, name) {
   document.getElementById('callInitiator').style.display = 'none';
   document.getElementById('callReceiver').style.display = 'block';
 
-  /* Call answer functionality starts */
-  answerBtn.addEventListener("click", function () { 
-  
   createPeerConnection();
   
-  yourConn.ontrack = gotRemoteStream;
-  yourConn.addStream(localStream);
-  
+  /* Call answer functionality starts */
+  answerBtn.addEventListener("click", function () { 
   connectedUser = name; 
   yourConn.setRemoteDescription(new RTCSessionDescription(offer)); 
  
@@ -232,8 +228,12 @@ function handleOffer(offer, name) {
 /* Call answer functionality ends */
 /* Call decline functionality starts */
 declineBtn.addEventListener("click", function () {
-  document.getElementById('callInitiator').style.display = 'block';
+  //document.getElementById('callInitiator').style.display = 'block';
   document.getElementById('callReceiver').style.display = 'none';
+  send({ 
+    type: "leave" 
+ });
+ handleLeave();
 
 });
 
@@ -285,6 +285,6 @@ function handleLeave() {
   console.log('signalling state after',signallingState1)
   document.getElementById('callOngoing').style.display = 'none';
   document.getElementById('callInitiator').style.display = 'block';
-  yourConn = null;
+  //yourConn = null;
 };
 
