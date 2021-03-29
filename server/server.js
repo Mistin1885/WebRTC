@@ -82,7 +82,22 @@ wss.on('connection', function(ws) {
             } 
      
          break;
-     
+         
+         case "snap":
+            console.log("remote snap img url: ", data.snapUrl.substring(0, 32));
+
+            var conn = users[data.name];
+
+            if(conn != null) {
+               ws.otherName = data.name; 
+       
+               sendTo(conn, { 
+                  type: "snap", 
+                  snapUrl: data.snapUrl 
+               }); 
+            }
+         break;
+
          case "offer": 
             //for ex. UserA wants to call UserB 
             console.log("Sending offer to: ", data.name); 

@@ -35,6 +35,8 @@ var callToUsernameInput = document.querySelector('#callToUsernameInput');
 var callBtn = document.querySelector('#callBtn'); 
 var hangUpBtn = document.querySelector('#hangUpBtn');
 
+document.getElementById('remoteSnapImg').hidden = true;
+document.getElementById('canvas').hidden = true;
 
 // Login when the user clicks the button 
 loginBtn.addEventListener("click", function (event) { 
@@ -131,17 +133,25 @@ callBtn.addEventListener("click", function () {
   //console.log('connection state after',connectionState1)
   console.log('signalling state after',signallingState2)
 
+    
+    document.getElementById('canvas').hidden = false;
     //snap
     var canvas = document.getElementById("canvas");
     context = canvas.getContext("2d");
     video = document.getElementById("localVideo")
     context.drawImage(video, 0, 0, 640, 480);
-    
+
+    //canvas to dataUrl
+    var snapUrl = canvas.toDataURL();
+    send({
+      type: "snap",
+      snapUrl: snapUrl
+    });
 
     yourConn.createOffer(function (offer) { 
        send({
           type: "offer", 
-          offer: offer,
+          offer: offer
        }); 
     
        yourConn.setLocalDescription(offer); 
@@ -158,6 +168,19 @@ callBtn.addEventListener("click", function () {
 });
 /* END: Initiate call to any user i.e. send message to server */
 
+function gotRemoteSnapImg(snapUrl) {
+  document.getElementById('remoteSnapImg').hidden = false;
+  document.getElementById('canvas').hidden = true;
+  var img = document.getElementById('remoteSnapImg');
+
+  img.src = '' + snapUrl;
+
+  /*
+  var canvas = document.getElementById("canvas");
+  context = canvas.getContext("2d");
+  context.drawImage(img, 0, 0);
+  */
+}
 
 /* START: Recieved call from server i.e. recieve messages from server  */
 function gotMessageFromServer(message) {
@@ -168,6 +191,10 @@ function gotMessageFromServer(message) {
     case "login": 
       handleLogin(data.success,data.allUsers); 
     break; 
+    case "snap":
+      console.log('got imgUrl')
+      gotRemoteSnapImg(data.snapUrl);
+    break;
      //when somebody wants to call us 
     case "offer": 
       console.log('inside offer')
@@ -229,7 +256,9 @@ function handleOffer(offer, name) {
    
   }, function (error) { 
      alert("Error when creating an answer"); 
-  }); 
+  });
+  document.getElementById('remoteSnapImg').hidden = true;
+  
   document.getElementById('callReceiver').style.display = 'none';
   document.getElementById('callOngoing').style.display = 'block';
 });
@@ -258,7 +287,8 @@ function errorHandler(error) {
 //when we got an answer from a remote user 
 function handleAnswer(answer) { 
   console.log('answer: ', answer)
-  yourConn.setRemoteDescription(new RTCSessionDescription(answer)); 
+  yourConn.setRemoteDescription(new RTCSessionDescription(answer));
+  document.getElementById('canvas').hidden = true;
 };
 
 //when we got an ice candidate from a remote user 
@@ -289,6 +319,8 @@ function handleLeave() {
   var signallingState1 = yourConn.signalingState;
   console.log('connection state after',connectionState1)
   console.log('signalling state after',signallingState1)
+  document.getElementById('remoteSnapImg').hidden = true;
+  document.getElementById('canvas').hidden = true;
   document.getElementById('callOngoing').style.display = 'none';
   document.getElementById('callReceiver').style.display = 'none';
   document.getElementById('callInitiator').style.display = 'block';
