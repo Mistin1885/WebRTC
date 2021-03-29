@@ -130,10 +130,18 @@ callBtn.addEventListener("click", function () {
   
   //console.log('connection state after',connectionState1)
   console.log('signalling state after',signallingState2)
+
+    //snap
+    var canvas = document.getElementById("canvas");
+    context = canvas.getContext("2d");
+    video = document.getElementById("localVideo")
+    context.drawImage(video, 0, 0, 640, 480);
+    
+
     yourConn.createOffer(function (offer) { 
        send({
           type: "offer", 
-          offer: offer 
+          offer: offer,
        }); 
     
        yourConn.setLocalDescription(offer); 
@@ -163,7 +171,7 @@ function gotMessageFromServer(message) {
      //when somebody wants to call us 
     case "offer": 
       console.log('inside offer')
-      handleOffer(data.offer, data.name); 
+      handleOffer(data.offer, data.name);
     break; 
     case "answer": 
       console.log('inside answer')
@@ -204,9 +212,10 @@ function handleOffer(offer, name) {
 
   createPeerConnection();
   
+  connectedUser = name; 
   /* Call answer functionality starts */
   answerBtn.addEventListener("click", function () { 
-  connectedUser = name; 
+  //connectedUser = name; 上移
   yourConn.setRemoteDescription(new RTCSessionDescription(offer)); 
  
   //create an answer to an offer 

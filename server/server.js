@@ -97,7 +97,7 @@ wss.on('connection', function(ws) {
                sendTo(conn, { 
                   type: "offer", 
                   offer: data.offer, 
-                  name: ws.name 
+                  name: ws.name
                }); 
             } 
      
