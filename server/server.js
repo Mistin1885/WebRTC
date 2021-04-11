@@ -78,7 +78,16 @@ wss.on('connection', function(ws) {
                   type: "login", 
                   success: true, 
                   allUsers:allUsers
-               }); 
+               });
+
+               for(var user in users){
+                  var conn = users[user];
+                  sendTo(conn, {
+                     type: "joined",
+                     allUsers:allUsers
+                  });
+               }
+               
             } 
      
          break;

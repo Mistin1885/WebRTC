@@ -48,11 +48,16 @@ loginBtn.addEventListener("click", function (event) {
      send({ 
         type: "login", 
         name: name 
-     }); 
+     });
   } 
  
 });
 
+function catchAllAvailableUsers(allUsers){
+  allAvailableUsers = allUsers.join();
+  console.log('All available users',allAvailableUsers)
+  showAllUsers.innerHTML = 'Available users: '+allAvailableUsers;
+}
 
 /* START: Register user for first time i.e. Prepare ground for webrtc call to happen */
 function handleLogin(success,allUsers) { 
@@ -60,10 +65,7 @@ function handleLogin(success,allUsers) {
     alert("Ooops...try a different username"); 
   } 
   else { 
-    
-    allAvailableUsers = allUsers.join();
-    console.log('All available users',allAvailableUsers)
-    showAllUsers.innerHTML = 'Available users: '+allAvailableUsers;
+    catchAllAvailableUsers(allUsers);
     localVideo = document.getElementById('localVideo');
     remoteVideo = document.getElementById('remoteVideo');
     document.getElementById('myName').hidden = true;
@@ -192,7 +194,10 @@ function gotMessageFromServer(message) {
   switch(data.type) { 
     case "login": 
       handleLogin(data.success,data.allUsers); 
-    break; 
+    break;
+    case "joined":
+      catchAllAvailableUsers(data.allUsers);
+    break;
     case "snap":
       console.log('got imgUrl')
       gotRemoteSnapImg(data.snapUrl);
