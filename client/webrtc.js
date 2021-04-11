@@ -19,6 +19,11 @@ var peerConnectionConfig = {
   ]
 };
 
+var constraints = {
+  video: true,
+  audio: true
+};
+
 serverConnection = new WebSocket('wss://' + window.location.hostname + ':8443');
 
 serverConnection.onopen = function () { 
@@ -36,6 +41,9 @@ var loginBtn = document.querySelector('#loginBtn');
 var callToUsernameInput = document.querySelector('#callToUsernameInput');
 var callBtn = document.querySelector('#callBtn'); 
 var hangUpBtn = document.querySelector('#hangUpBtn');
+
+var turnOnVidBtn = document.getElementById('turnOnVid');
+var turnOffVidBtn = document.getElementById('turnOffVid');
 
 document.getElementById('remoteSnapImg').hidden = true;
 document.getElementById('canvas').hidden = true;
@@ -71,13 +79,6 @@ function handleLogin(success,allUsers) {
     document.getElementById('myName').hidden = true;
     document.getElementById('otherElements').hidden = false;
 
-  
-
-  var constraints = {
-    video: true,
-    audio: true
-  };
-
   /* START:The camera stream acquisition */
   if(navigator.mediaDevices.getUserMedia) {
     navigator.mediaDevices.getUserMedia(constraints).then(getUserMediaSuccess).catch(errorHandler);
@@ -88,6 +89,21 @@ function handleLogin(success,allUsers) {
   }
 }
 /* END: Register user for first time i.e. Prepare ground for webrtc call to happen */
+
+turnOffVidBtn.addEventListener("click", function () {
+  constraints.video = false;
+
+  navigator.mediaDevices.getUserMedia(constraints).then(getUserMediaSuccess).catch(errorHandler);
+
+  addUserMedia();
+});
+
+turnOnVidBtn.addEventListener("click", function() {
+  constraints.video = true;
+
+  navigator.mediaDevices.getUserMedia(constraints).then(getUserMediaSuccess).catch(errorHandler);
+  addUserMedia();
+});
 
 function getUserMediaSuccess(stream) {
   localStream = stream;
