@@ -10,6 +10,8 @@ var connectionState;
 var name; 
 var connectedUser;
 
+var allAvailableUsers;
+
 var peerConnectionConfig = {
   'iceServers': [
     {'urls': 'stun:stun.stunprotocol.org:3478'},
@@ -59,7 +61,7 @@ function handleLogin(success,allUsers) {
   } 
   else { 
     
-    var allAvailableUsers = allUsers.join();
+    allAvailableUsers = allUsers.join();
     console.log('All available users',allAvailableUsers)
     showAllUsers.innerHTML = 'Available users: '+allAvailableUsers;
     localVideo = document.getElementById('localVideo');
@@ -119,7 +121,7 @@ callBtn.addEventListener("click", function () {
 
   var callToUsername = document.getElementById('callToUsernameInput').value;
 	
-  if (callToUsername.length > 0) { 
+  if (callToUsername.length > 0 && allAvailableUsers.includes(callToUsername) == true && callToUsername != name) { 
     connectedUser = callToUsername; 
     console.log('nameToCall',connectedUser);
     console.log('create an offer to-',connectedUser)
@@ -164,7 +166,7 @@ callBtn.addEventListener("click", function () {
 
   } 
   else 
-    alert("username can't be blank!")
+    alert("User Not Found !")
 });
 /* END: Initiate call to any user i.e. send message to server */
 
