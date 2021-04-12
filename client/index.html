@@ -24,12 +24,20 @@
         <button id = "turnOnVid" class = "btn-success btn">On</button> 
         <button id = "turnOffVid" class = "btn-danger btn">Off</button> 
       </div>
-      <b><span id="showLocalUserName"></span></b>
-      <video id="localVideo" autoplay muted style="width:40%;"></video>
-      <b><span id="showRemoteUserName"></span></b>
-      <video id="remoteVideo" autoplay style="width:40%;"></video>
+      <div id="dv_video">
+        <b><span id="showLocalUserName"></span></b>
+        <video id="localVideo" autoplay muted style="width:40%;"></video>
+        <b><span id="showRemoteUserName"></span></b>
+        <video id="remoteVideo" autoplay style="width:40%;"></video>
+      </div>
+      <div id="dv_img">
+        <b><span id="showLocalUserName"></span></b>
+        <img id="localImg" width="40%">
+        <b><span id="showRemoteUserName"></span></b>
+        <img id="remoteImg" src='https://uwm.edu/spanish-portuguese/wp-content/plugins/uwmpeople/images/profile-default.jpg' width="40%">
+      </div>
       <canvas id="canvas" width="640" height="480"></canvas>
-      <img id="remoteSnapImg">
+      <img id="remoteSnapImg" width="40%">
       
       <br />
       <div id='callInitiator'>

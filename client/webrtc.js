@@ -12,6 +12,8 @@ var connectedUser;
 
 var allAvailableUsers;
 
+var remoteImgUrl;
+
 var peerConnectionConfig = {
   'iceServers': [
     {'urls': 'stun:stun.stunprotocol.org:3478'},
@@ -33,6 +35,8 @@ serverConnection.onopen = function () {
 serverConnection.onmessage = gotMessageFromServer;
 
 document.getElementById('otherElements').hidden = true;
+document.getElementById('dv_img').hidden = true;
+
 var usernameInput = document.querySelector('#usernameInput'); 
 var usernameShow = document.querySelector('#showLocalUserName'); 
 var showAllUsers = document.querySelector('#allUsers');
@@ -92,14 +96,24 @@ function handleLogin(success,allUsers) {
 
 turnOffVidBtn.addEventListener("click", function () {
   constraints.video = false;
-
   navigator.mediaDevices.getUserMedia(constraints).then(stopStreamedVideo).catch(errorHandler);
+
+  document.getElementById('dv_video').hidden = true;
+
+  document.getElementById('dv_img').hidden = false;
+  document.getElementById('localImg').src = 'https://tnimage.s3.hicloud.net.tw/photos/2019/12/20/1576828719-5dfc7f2f96d3e.jpg';
+  document.getElementById('remoteImg').src = '' + remoteImgUrl;
 });
 
 turnOnVidBtn.addEventListener("click", function() {
   constraints.video = true;
-
   navigator.mediaDevices.getUserMedia(constraints).then(getUserMediaSuccess).catch(errorHandler);
+  
+  document.getElementById('dv_video').hidden = false;
+
+  document.getElementById('dv_img').hidden = true;
+  document.getElementById('localImg').src = null;
+
   addUserMedia();
 });
 
@@ -200,8 +214,10 @@ callBtn.addEventListener("click", function () {
 function gotRemoteSnapImg(snapUrl) {
   document.getElementById('remoteSnapImg').hidden = false;
   document.getElementById('canvas').hidden = true;
-  var img = document.getElementById('remoteSnapImg');
 
+  remoteImgUrl = snapUrl;
+
+  var img = document.getElementById('remoteSnapImg');
   img.src = '' + snapUrl;
 
 }
@@ -316,6 +332,8 @@ function handleAnswer(answer) {
   console.log('answer: ', answer)
   yourConn.setRemoteDescription(new RTCSessionDescription(answer));
   document.getElementById('canvas').hidden = true;
+
+  
 };
 
 //when we got an ice candidate from a remote user 
