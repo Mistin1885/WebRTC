@@ -93,9 +93,7 @@ function handleLogin(success,allUsers) {
 turnOffVidBtn.addEventListener("click", function () {
   constraints.video = false;
 
-  navigator.mediaDevices.getUserMedia(constraints).then(getUserMediaSuccess).catch(errorHandler);
-
-  addUserMedia();
+  navigator.mediaDevices.getUserMedia(constraints).then(stopStreamedVideo).catch(errorHandler);
 });
 
 turnOnVidBtn.addEventListener("click", function() {
@@ -105,6 +103,14 @@ turnOnVidBtn.addEventListener("click", function() {
   addUserMedia();
 });
 
+function stopStreamedVideo(stream) {
+  localStream = stream;
+  localVideo.srcObject = null;
+
+  yourConn.removeTrack(yourConn.getSenders().find(sender => sender.track == track));
+
+}
+
 function getUserMediaSuccess(stream) {
   localStream = stream;
   localVideo.srcObject = stream;
@@ -112,7 +118,10 @@ function getUserMediaSuccess(stream) {
 
 function addUserMedia(){
   yourConn.ontrack = gotRemoteStream;
-  yourConn.addStream(localStream);
+  //yourConn.addStream(localStream);
+  localStream.getTracks().forEach(function(track) {
+    yourConn.addTrack(track, localStream);
+  });
 }
 
 function createPeerConnection(){
@@ -195,11 +204,6 @@ function gotRemoteSnapImg(snapUrl) {
 
   img.src = '' + snapUrl;
 
-  /*
-  var canvas = document.getElementById("canvas");
-  context = canvas.getContext("2d");
-  context.drawImage(img, 0, 0);
-  */
 }
 
 /* START: Recieved call from server i.e. recieve messages from server  */
