@@ -13,28 +13,40 @@
   <body>
     <div id="myName">
       <input type="text" id="usernameInput" placeholder="My name">
+      <form id="form_identify" name="form_identify">
+        <label><input type="radio" name="identify" value="visitor" required>visitor</label>
+        <label><input type="radio" name="identify" value="employee">employee</label>
+      </form>
       <input type="button" id="loginBtn" value="Save"></input>
     </div>
     <div>
       <h3><span id="allUsers"></span></h3>
     </div>
     <div id="otherElements">
-      <div>
-        <p>Video:</p>
-        <button id = "turnOnVid" class = "btn-success btn">On</button> 
-        <button id = "turnOffVid" class = "btn-danger btn">Off</button> 
+      <div id="dv_employee">
+        <div id="controlVid">
+          <p>RemoteVideo:</p>
+          <button id="turnOnVid" class="btn-success btn">On</button> 
+          <button id="turnOffVid" class="btn-danger btn">Off</button> 
+        </div>
+        <b><span id="showLocalUserName"></span></b>
+        <div>
+          <img id="localImg" width="40%">
+          <b><span id="showRemoteUserName"></span></b>
+          <div id="dv_remoteVideo">
+            <video id="remoteVideo" autoplay style="width:40%;"></video>
+          </div>
+          <div id="dv_remoteImg">
+            <img id="remoteImg" width="40%">
+          </div>
+        </div>
       </div>
-      <div id="dv_video">
+      <div id="dv_visitor">
         <b><span id="showLocalUserName"></span></b>
         <video id="localVideo" autoplay muted style="width:40%;"></video>
         <b><span id="showRemoteUserName"></span></b>
-        <video id="remoteVideo" autoplay style="width:40%;"></video>
-      </div>
-      <div id="dv_img">
-        <b><span id="showLocalUserName"></span></b>
-        <img id="localImg" width="40%">
-        <b><span id="showRemoteUserName"></span></b>
-        <img id="remoteImg" src='https://uwm.edu/spanish-portuguese/wp-content/plugins/uwmpeople/images/profile-default.jpg' width="40%">
+        <img id="remoteImg" width="40%">
+        <p id="show_IfCalling"></p>
       </div>
       <canvas id="canvas" width="640" height="480"></canvas>
       <img id="remoteSnapImg" width="40%">

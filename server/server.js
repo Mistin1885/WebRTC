@@ -192,7 +192,7 @@ wss.on('connection', function(ws) {
          
             if(conn != null) { 
                sendTo(conn, { 
-                  type: "leave" 
+                  type: "leave"
                }); 
             }  
          } 

@@ -9,6 +9,7 @@ var connectionState;
 
 var name; 
 var connectedUser;
+var iden;
 
 var allAvailableUsers;
 
@@ -35,7 +36,6 @@ serverConnection.onopen = function () {
 serverConnection.onmessage = gotMessageFromServer;
 
 document.getElementById('otherElements').hidden = true;
-document.getElementById('dv_img').hidden = true;
 
 var usernameInput = document.querySelector('#usernameInput'); 
 var usernameShow = document.querySelector('#showLocalUserName'); 
@@ -46,8 +46,19 @@ var callToUsernameInput = document.querySelector('#callToUsernameInput');
 var callBtn = document.querySelector('#callBtn'); 
 var hangUpBtn = document.querySelector('#hangUpBtn');
 
+var form = document.getElementById('form_identify');
+
+document.getElementById('canvas').hidden = true;
+
+//default on call with no video
+document.getElementById('dv_remoteVideo').hidden = true;
+document.getElementById('dv_remoteImg').hidden = false;
+
 var turnOnVidBtn = document.getElementById('turnOnVid');
 var turnOffVidBtn = document.getElementById('turnOffVid');
+
+//setting localImgage
+document.getElementById('localImg').src = 'https://tnimage.s3.hicloud.net.tw/photos/2019/12/20/1576828719-5dfc7f2f96d3e.jpg';
 
 document.getElementById('remoteSnapImg').hidden = true;
 document.getElementById('canvas').hidden = true;
@@ -61,7 +72,7 @@ loginBtn.addEventListener("click", function (event) {
         type: "login", 
         name: name 
      });
-  } 
+  }
  
 });
 
@@ -83,6 +94,26 @@ function handleLogin(success,allUsers) {
     document.getElementById('myName').hidden = true;
     document.getElementById('otherElements').hidden = false;
 
+    for(var i=0; i<form.identify.length; i++){
+      if(form.identify[i].checked){
+        iden = form.identify[i].value;
+        break;
+      }
+    }
+
+    if(iden == "visitor"){
+      document.getElementById('dv_visitor').hidden = false;
+      document.getElementById('dv_employee').hidden = true;
+    } else{
+      document.getElementById('dv_visitor').hidden = true;
+      document.getElementById('dv_employee').hidden = false;
+
+      constraints = {
+        video: false,
+        audio: true
+      };
+    }
+
   /* START:The camera stream acquisition */
   if(navigator.mediaDevices.getUserMedia) {
     navigator.mediaDevices.getUserMedia(constraints).then(getUserMediaSuccess).catch(errorHandler);
@@ -95,26 +126,16 @@ function handleLogin(success,allUsers) {
 /* END: Register user for first time i.e. Prepare ground for webrtc call to happen */
 
 turnOffVidBtn.addEventListener("click", function () {
-  constraints.video = false;
-  navigator.mediaDevices.getUserMedia(constraints).then(stopStreamedVideo).catch(errorHandler);
+  document.getElementById('dv_remoteVideo').hidden = true;
+  document.getElementById('dv_remoteImg').hidden = false;
 
-  document.getElementById('dv_video').hidden = true;
-
-  document.getElementById('dv_img').hidden = false;
-  document.getElementById('localImg').src = 'https://tnimage.s3.hicloud.net.tw/photos/2019/12/20/1576828719-5dfc7f2f96d3e.jpg';
   document.getElementById('remoteImg').src = '' + remoteImgUrl;
 });
 
 turnOnVidBtn.addEventListener("click", function() {
-  constraints.video = true;
-  navigator.mediaDevices.getUserMedia(constraints).then(getUserMediaSuccess).catch(errorHandler);
-  
-  document.getElementById('dv_video').hidden = false;
+  document.getElementById('dv_remoteVideo').hidden = false;
+  document.getElementById('dv_remoteImg').hidden = true;
 
-  document.getElementById('dv_img').hidden = true;
-  document.getElementById('localImg').src = null;
-
-  addUserMedia();
 });
 
 function stopStreamedVideo(stream) {
@@ -177,7 +198,7 @@ callBtn.addEventListener("click", function () {
   console.log('signalling state after',signallingState2)
 
     
-    document.getElementById('canvas').hidden = false;
+    document.getElementById('canvas').hidden = true;
     //snap
     var canvas = document.getElementById("canvas");
     context = canvas.getContext("2d");
@@ -201,7 +222,8 @@ callBtn.addEventListener("click", function () {
     }, function (error) { 
        alert("Error when creating an offer",error); 
        console.log("Error when creating an offer",error)
-    }); 
+    });
+    document.getElementById('show_IfCalling').innerHTML = '-- calling --';
     document.getElementById('callOngoing').style.display = 'block';
     document.getElementById('callInitiator').style.display = 'none';
 
@@ -256,6 +278,7 @@ function gotMessageFromServer(message) {
       handleLeave();
       alert("Remote has disconnected !");
     break;
+
     default: 
       break; 
   } 
@@ -285,35 +308,34 @@ function handleOffer(offer, name) {
   connectedUser = name; 
   /* Call answer functionality starts */
   answerBtn.addEventListener("click", function () { 
-  //connectedUser = name; 上移
-  yourConn.setRemoteDescription(new RTCSessionDescription(offer)); 
- 
-  //create an answer to an offer 
-  yourConn.createAnswer(function (answer) { 
-    yourConn.setLocalDescription(answer); 
-   
-    send({ 
-      type: "answer", 
-        answer: answer 
-    });
-   
-  }, function (error) { 
-     alert("Error when creating an answer"); 
-  });
-  document.getElementById('remoteSnapImg').hidden = true;
+    //connectedUser = name; 上移
+    yourConn.setRemoteDescription(new RTCSessionDescription(offer)); 
   
-  document.getElementById('callReceiver').style.display = 'none';
-  document.getElementById('callOngoing').style.display = 'block';
-});
-/* Call answer functionality ends */
-/* Call decline functionality starts */
-declineBtn.addEventListener("click", function () {
-  send({ 
-    type: "leave" 
- });
- handleLeave();
-
-});
+    //create an answer to an offer 
+    yourConn.createAnswer(function (answer) { 
+      yourConn.setLocalDescription(answer); 
+    
+      send({ 
+        type: "answer", 
+          answer: answer 
+      });
+    
+    }, function (error) { 
+      alert("Error when creating an answer"); 
+    });
+    document.getElementById('remoteSnapImg').hidden = true;
+    document.getElementById('remoteImg').src = '' + remoteImgUrl;
+    document.getElementById('callReceiver').style.display = 'none';
+    document.getElementById('callOngoing').style.display = 'block';
+  });
+  /* Call answer functionality ends */
+  /* Call decline functionality starts */
+  declineBtn.addEventListener("click", function () {
+    send({ 
+      type: "leave" 
+    });
+  handleLeave();
+  });
 
 /*Call decline functionality ends */
 };
@@ -332,7 +354,7 @@ function handleAnswer(answer) {
   console.log('answer: ', answer)
   yourConn.setRemoteDescription(new RTCSessionDescription(answer));
   document.getElementById('canvas').hidden = true;
-
+  document.getElementById('show_IfCalling').innerHTML = '-- on call --';
   
 };
 
@@ -350,6 +372,7 @@ hangUpBtn.addEventListener("click", function () {
   handleLeave();
 });
 
+
 function handleLeave() { 
   connectedUser = null; 
   remoteVideo.src = null; 
@@ -365,7 +388,9 @@ function handleLeave() {
   console.log('connection state after',connectionState1)
   console.log('signalling state after',signallingState1)
   document.getElementById('remoteSnapImg').hidden = true;
+  document.getElementById('remoteImg').src = '';
   document.getElementById('canvas').hidden = true;
+  document.getElementById('show_IfCalling').innerHTML = '';
   document.getElementById('callOngoing').style.display = 'none';
   document.getElementById('callReceiver').style.display = 'none';
   document.getElementById('callInitiator').style.display = 'block';
