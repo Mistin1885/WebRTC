@@ -13,6 +13,8 @@ var iden;
 
 var allAvailableUsers;
 
+var callTimeout;
+
 var remoteImgUrl;
 
 var peerConnectionConfig = {
@@ -106,7 +108,7 @@ function handleLogin(success,allUsers) {
       document.getElementById('dv_employee').hidden = true;
     } else{
       document.getElementById('dv_visitor').hidden = true;
-      document.getElementById('dv_employee').hidden = false;
+      document.getElementById('dv_employee').hidden = true;
 
       constraints = {
         video: false,
@@ -227,6 +229,7 @@ callBtn.addEventListener("click", function () {
     document.getElementById('callOngoing').style.display = 'block';
     document.getElementById('callInitiator').style.display = 'none';
 
+    callTimeout = window.setTimeout(( () => timeoutCancel() ), 8000); //8s timeout -> cancel calling
   } 
   else 
     alert("User Not Found !")
@@ -264,6 +267,7 @@ function gotMessageFromServer(message) {
     case "offer": 
       console.log('inside offer')
       handleOffer(data.offer, data.name);
+      alert("Receive a call from " + data.name);
     break; 
     case "answer": 
       console.log('inside answer')
@@ -273,7 +277,16 @@ function gotMessageFromServer(message) {
     case "candidate": 
       console.log('inside handle candidate')
       handleCandidate(data.candidate); 
-    break; 
+    break;
+    case "decline":
+      window.clearTimeout(callTimeout);
+      handleLeave();
+      alert("No response from remote");
+    break;
+    case "timeout":
+      handleLeave();
+      alert("You didn't resopnse a call from " + data.name);
+    break;
     case "leave": 
       handleLeave();
       alert("Remote has disconnected !");
@@ -323,6 +336,7 @@ function handleOffer(offer, name) {
     }, function (error) { 
       alert("Error when creating an answer"); 
     });
+    document.getElementById('dv_employee').hidden = false;
     document.getElementById('remoteSnapImg').hidden = true;
     document.getElementById('remoteImg').src = '' + remoteImgUrl;
     document.getElementById('callReceiver').style.display = 'none';
@@ -332,13 +346,22 @@ function handleOffer(offer, name) {
   /* Call decline functionality starts */
   declineBtn.addEventListener("click", function () {
     send({ 
-      type: "leave" 
+      type: "decline" 
     });
   handleLeave();
   });
 
 /*Call decline functionality ends */
 };
+
+function timeoutCancel(){
+  send({
+    type: "timeout",
+    name: name
+  });
+  handleLeave();
+  alert("8s timeout")
+}
 
 function gotRemoteStream(event) {
   console.log('got remote stream');
@@ -353,6 +376,8 @@ function errorHandler(error) {
 function handleAnswer(answer) { 
   console.log('answer: ', answer)
   yourConn.setRemoteDescription(new RTCSessionDescription(answer));
+
+  window.clearTimeout(callTimeout);
   document.getElementById('canvas').hidden = true;
   document.getElementById('show_IfCalling').innerHTML = '-- on call --';
   
@@ -390,6 +415,7 @@ function handleLeave() {
   document.getElementById('remoteSnapImg').hidden = true;
   document.getElementById('remoteImg').src = '';
   document.getElementById('canvas').hidden = true;
+  document.getElementById('dv_employee').hidden = true;
   document.getElementById('show_IfCalling').innerHTML = '';
   document.getElementById('callOngoing').style.display = 'none';
   document.getElementById('callReceiver').style.display = 'none';

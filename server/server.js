@@ -169,6 +169,32 @@ wss.on('connection', function(ws) {
             }  
       
          break;
+
+         case "timeout":
+            console.log("call timeout");
+            var conn = users[data.name]; 
+            //conn.otherName = null; 
+      
+            if(conn != null) { 
+               sendTo(conn, { 
+                  type: "timeout",
+                  name: ws.name 
+               }); 
+            }  
+         break;
+
+         case "decline":
+            console.log("Decline from", data.name); 
+            var conn = users[data.name]; 
+            //conn.otherName = null; 
+      
+            //notify the other user so he can disconnect his peer connection 
+            if(conn != null) { 
+               sendTo(conn, { 
+                  type: "decline" 
+               }); 
+            }  
+         break;
      
          default: 
             sendTo(ws, { 
