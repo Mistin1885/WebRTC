@@ -26,3 +26,8 @@ Recent versions of Chrome require secure websockets for WebRTC. Thus, this examp
 - hang up send offer error / stream missing
 - notify when remote disconnected
 - send local snap img to remote while calling
+- add client identify
+- when on call, switch remote show as video or img
+- refresh online user immediately
+- add timeout function
+- add user on call detect function
