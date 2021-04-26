@@ -12,6 +12,7 @@ var connectedUser;
 var iden;
 
 var allAvailableUsers;
+var all_user_status;
 
 var callTimeout;
 
@@ -82,6 +83,16 @@ function catchAllAvailableUsers(allUsers){
   allAvailableUsers = allUsers.join();
   console.log('All available users',allAvailableUsers)
   showAllUsers.innerHTML = 'Available users: '+allAvailableUsers;
+}
+
+function refreshAllAvailableUsers(user_status) {
+  console.log('Users Status: ', user_status)
+  all_user_status = user_status;
+  var show_all_users = []
+  for (var us in user_status) {
+    show_all_users.push(us);
+  }
+  showAllUsers.innerHTML = 'Available users: ' + show_all_users;
 }
 
 /* START: Register user for first time i.e. Prepare ground for webrtc call to happen */
@@ -190,51 +201,67 @@ callBtn.addEventListener("click", function () {
     console.log('nameToCall',connectedUser);
     console.log('create an offer to-',connectedUser)
 
-    createPeerConnection()
-    
-    var connectionState2 = yourConn.connectionState;
-    console.log('connection state before call beginning',connectionState2)
-    var signallingState2 = yourConn.signalingState;
-  
-  //console.log('connection state after',connectionState1)
-  console.log('signalling state after',signallingState2)
-
-    
-    document.getElementById('canvas').hidden = true;
-    //snap
-    var canvas = document.getElementById("canvas");
-    context = canvas.getContext("2d");
-    video = document.getElementById("localVideo")
-    context.drawImage(video, 0, 0, 640, 480);
-
-    //canvas to dataUrl
-    var snapUrl = canvas.toDataURL();
-    send({
-      type: "snap",
-      snapUrl: snapUrl
-    });
-
-    yourConn.createOffer(function (offer) { 
-       send({
-          type: "offer", 
-          offer: offer
-       }); 
-    
-       yourConn.setLocalDescription(offer); 
-    }, function (error) { 
-       alert("Error when creating an offer",error); 
-       console.log("Error when creating an offer",error)
-    });
-    document.getElementById('show_IfCalling').innerHTML = '-- calling --';
-    document.getElementById('callOngoing').style.display = 'block';
-    document.getElementById('callInitiator').style.display = 'none';
-
-    callTimeout = window.setTimeout(( () => timeoutCancel() ), 8000); //8s timeout -> cancel calling
+    if (all_user_status[connectedUser] == true) {
+      callOut();
+    }else{
+      alert(callToUsername + " is on call !");
+      handleLeave();
+    }
   } 
   else 
     alert("User Not Found !")
 });
 /* END: Initiate call to any user i.e. send message to server */
+
+function callOut() {
+  var callToUsername = document.getElementById('callToUsernameInput').value;
+
+  connectedUser = callToUsername; 
+  console.log('nameToCall',connectedUser);
+  console.log('create an offer to-',connectedUser)
+
+  createPeerConnection()
+    
+  var connectionState2 = yourConn.connectionState;
+  console.log('connection state before call beginning',connectionState2)
+  var signallingState2 = yourConn.signalingState;
+  
+  //console.log('connection state after',connectionState1)
+  console.log('signalling state after',signallingState2)
+
+    
+  document.getElementById('canvas').hidden = true;
+  //snap
+  var canvas = document.getElementById("canvas");
+  context = canvas.getContext("2d");
+  video = document.getElementById("localVideo")
+  context.drawImage(video, 0, 0, 640, 480);
+
+  //canvas to dataUrl
+  var snapUrl = canvas.toDataURL();
+  send({
+    type: "snap",
+    snapUrl: snapUrl
+  });
+
+  yourConn.createOffer(function (offer) { 
+      send({
+        type: "offer", 
+        offer: offer,
+        reqFrom: name
+      }); 
+    
+      yourConn.setLocalDescription(offer); 
+  }, function (error) { 
+      alert("Error when creating an offer",error); 
+      console.log("Error when creating an offer",error)
+  });
+  document.getElementById('show_IfCalling').innerHTML = '-- calling --';
+  document.getElementById('callOngoing').style.display = 'block';
+  document.getElementById('callInitiator').style.display = 'none';
+
+  callTimeout = window.setTimeout(( () => timeoutCancel() ), 8000); //8s timeout -> cancel calling
+}
 
 function gotRemoteSnapImg(snapUrl) {
   document.getElementById('remoteSnapImg').hidden = false;
@@ -258,6 +285,9 @@ function gotMessageFromServer(message) {
     break;
     case "joined":
       catchAllAvailableUsers(data.allUsers);
+    break;
+    case "statusChange":
+      refreshAllAvailableUsers(data.user_status);
     break;
     case "snap":
       console.log('got imgUrl')
@@ -330,7 +360,7 @@ function handleOffer(offer, name) {
     
       send({ 
         type: "answer", 
-          answer: answer 
+          answer: answer
       });
     
     }, function (error) { 
@@ -346,7 +376,8 @@ function handleOffer(offer, name) {
   /* Call decline functionality starts */
   declineBtn.addEventListener("click", function () {
     send({ 
-      type: "decline" 
+      type: "decline",
+      reqFrom: name
     });
   handleLeave();
   });
@@ -357,7 +388,7 @@ function handleOffer(offer, name) {
 function timeoutCancel(){
   send({
     type: "timeout",
-    name: name
+    reqFrom: name
   });
   handleLeave();
   alert("8s timeout")
@@ -391,7 +422,8 @@ function handleCandidate(candidate) {
 //hang up
 hangUpBtn.addEventListener("click", function () { 
   send({ 
-     type: "leave" 
+     type: "leave",
+     reqFrom: name
   }); 
  
   handleLeave();

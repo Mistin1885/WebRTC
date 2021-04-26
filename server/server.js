@@ -14,6 +14,7 @@ const serverConfig = {
 //all connected to the server users 
 var users = {};
 var allUsers = [];
+var user_status = {};
 // ----------------------------------------------------------------------------------------
 
 // Create a server for the client html page
@@ -71,6 +72,7 @@ wss.on('connection', function(ws) {
                users[data.name] = ws; 
                allUsers.indexOf(data.name) === -1 ? allUsers.push(data.name) : console.log("This item already exists");
                
+               user_status[data.name] = true;
                //console.log('all available users',JSON.stringify(users))
                ws.name = data.name;
        
@@ -87,7 +89,9 @@ wss.on('connection', function(ws) {
                      allUsers:allUsers
                   });
                }
-               
+
+               changeUserStatus(data.name, "free");
+               notifyUsers();
             } 
      
          break;
@@ -123,6 +127,10 @@ wss.on('connection', function(ws) {
                   offer: data.offer, 
                   name: ws.name
                }); 
+
+               changeUserStatus(data.reqFrom, "oncall");
+               changeUserStatus(data.name, "oncall");
+               notifyUsers();
             } 
      
          break;
@@ -165,7 +173,11 @@ wss.on('connection', function(ws) {
             if(conn != null) { 
                sendTo(conn, { 
                   type: "leave" 
-               }); 
+               });
+
+               changeUserStatus(data.reqFrom, "free");
+               changeUserStatus(data.name, "free");
+               notifyUsers();
             }  
       
          break;
@@ -179,7 +191,11 @@ wss.on('connection', function(ws) {
                sendTo(conn, { 
                   type: "timeout",
                   name: ws.name 
-               }); 
+               });
+
+               changeUserStatus(data.reqFrom, "free");
+               changeUserStatus(data.name, "free");
+               notifyUsers();
             }  
          break;
 
@@ -192,7 +208,11 @@ wss.on('connection', function(ws) {
             if(conn != null) { 
                sendTo(conn, { 
                   type: "decline" 
-               }); 
+               });
+
+               changeUserStatus(data.reqFrom, "free");
+               changeUserStatus(data.name, "free");
+               notifyUsers();
             }  
          break;
      
@@ -238,6 +258,28 @@ function sendTo(connection, message) {
 //     }
 //   });
 // };
+
+function changeUserStatus(tar, act) {
+   switch (act) {
+      case "oncall":
+         user_status[tar] = false;
+      break;
+      
+      case "free":
+         user_status[tar] = true;
+      break;
+   }
+}
+
+function notifyUsers() {
+   for(var user in users){
+      var conn = users[user];
+      sendTo(conn, {
+         type: "statusChange",
+         user_status:user_status
+      });
+   }
+}
 
 console.log('Server running. Visit https://localhost:' + HTTPS_PORT + ' in Firefox/Chrome.\n\n\
 Some important notes:\n\
